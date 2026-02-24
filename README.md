@@ -14,9 +14,17 @@ zmqpp  git://github.com/zeromq/zmqpp.git
 cppzmq   git://github.com/zeromq/cppzmq
 
 ## install step
-1. make              build directory with bin,lib subdirectory
-2. make install      cp lib/message_sdk.so to /usr/local/lib
-3. run example       in ./build/bin directory
+1. make
+   
+   build directory with bin,lib subdirectory
+   
+2. make install
+   
+   cp lib/message_sdk.so to /usr/local/lib
+   
+3. run example
+   
+   in ./build/bin directory
 
      rep_server
 
