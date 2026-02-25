@@ -8,6 +8,8 @@ ZmqBase::ZmqBase(const ClientConfig& cfg)
     : config_(cfg),
       context_(),
       workers_(cfg.worker_threads) {
+        context_.set(zmqpp::context_option::io_threads,
+                 cfg.io_threads > 0 ? cfg.io_threads : 1);
 }
 
 ZmqBase::~ZmqBase() {
