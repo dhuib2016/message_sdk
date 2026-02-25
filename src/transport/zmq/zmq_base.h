@@ -29,6 +29,8 @@ public:
 
     bool isRunning() const override;
 
+    bool send(const Message& msg);
+
 protected:
 
     // 派生类必须实现
