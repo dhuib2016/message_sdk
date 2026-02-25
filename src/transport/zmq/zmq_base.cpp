@@ -86,6 +86,23 @@ bool ZmqBase::isRunning() const {
     return running_;
 }
 
+bool ZmqBase::send(const Message& msg)
+{
+    if (!running_)
+        return false;
+
+    send_queue_.push(msg);
+
+    // 唤醒 io 线程
+    if (wakeup_sender_) {
+        zmqpp::message wake;
+        wake << "w";
+        wakeup_sender_->send(wake);
+    }
+
+    return true;
+}
+
 void ZmqBase::setupSocket(zmqpp::socket& sock) {
 
     // 对于 REQ socket，receive_timeout 应该设为 -1（无限等待）
@@ -117,7 +134,14 @@ void ZmqBase::handleRawMessage(zmqpp::message& msg)
 void ZmqBase::ioLoop() {
 
     zmqpp::poller poller;
-    poller.add(*socket_);
+
+    // 只有非 PUB 才监听 socket 输入
+    bool hasNetworkSocket = false;
+
+    if (socketType() != zmqpp::socket_type::publish) {
+        poller.add(*socket_);
+        hasNetworkSocket = true;
+    }
     poller.add(*wakeup_receiver_);
 
     while (running_) {
@@ -141,11 +165,14 @@ void ZmqBase::ioLoop() {
 
                 std::lock_guard<std::mutex> lock(socket_mutex_);
                 socket_->send(zmsg);
+
+                // ⭐ 走虚函数
+                //onSend(msg);
             }
         }
 
         // 2️⃣ 处理网络接收
-        if (poller.has_input(*socket_)) {
+        if (hasNetworkSocket && poller.has_input(*socket_)) {
 
             zmqpp::message zmsg;
 
@@ -158,6 +185,8 @@ void ZmqBase::ioLoop() {
                     recv_queue_.push(m);
             }
         }
+
+       
     }
 }
 
