@@ -19,7 +19,7 @@ void ZmqSubClient::setupSocket(zmqpp::socket& sock) {
     sock.subscribe("");
 
     sock.set(zmqpp::socket_option::linger, 0);
-    sock.set(zmqpp::socket_option::receive_high_water_mark, 10000);
+    sock.set(zmqpp::socket_option::receive_high_water_mark, 1000000);
 }
 
 // SUB 不发送

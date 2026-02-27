@@ -17,7 +17,8 @@ void ZmqPubServer::setupSocket(zmqpp::socket& sock) {
 
     // 推荐配置
     sock.set(zmqpp::socket_option::linger, 0);
-    sock.set(zmqpp::socket_option::send_high_water_mark, 10000);
+    sock.set(zmqpp::socket_option::send_high_water_mark, 1000000);
+
 }
 
 void ZmqPubServer::onSend(const Message& msg) {
