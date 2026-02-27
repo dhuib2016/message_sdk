@@ -35,4 +35,9 @@ void ZmqSubClient::handleRawMessage(zmqpp::message& zmsg) {
     }
 }
 
+void ZmqSubClient::setMessageHandler(MessageHandler handler)
+{
+    handler_ = std::move(handler);
+}
+
 }
