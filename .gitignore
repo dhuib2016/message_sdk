@@ -1,0 +1,16 @@
+# build output
+build/
+*.o
+*.so
+*.a
+*.out
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
