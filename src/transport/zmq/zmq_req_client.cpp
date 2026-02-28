@@ -2,34 +2,29 @@
 
 namespace msgsdk {
 
-ZmqReqClient::ZmqReqClient(const ClientConfig& cfg)
-    : ZmqBase(cfg) {
+ZmqReqClient::ZmqReqClient(const ClientConfig &cfg) : ZmqBase(cfg) {}
+
+zmqpp::socket_type ZmqReqClient::socketType() const {
+
+  return zmqpp::socket_type::dealer;
 }
 
-zmqpp::socket_type
-ZmqReqClient::socketType() const {
+bool ZmqReqClient::send(const Message &msg) {
 
-    return zmqpp::socket_type::req;
+  if (!running_)
+    return false;
+
+  try {
+    onSend(msg);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
-bool ZmqReqClient::send(const Message& msg) {
+void ZmqReqClient::setMessageHandler(MessageHandler handler) {
 
-    if (!running_) return false;
-
-    try {
-        onSend(msg);
-        return true;
-    }
-    catch (...) {
-        return false;
-    }
+  handler_ = std::move(handler);
 }
 
-void ZmqReqClient::setMessageHandler(
-    MessageHandler handler) {
-
-    handler_ = std::move(handler);
-}
-
-}
-
+} // namespace msgsdk

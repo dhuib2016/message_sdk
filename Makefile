@@ -75,18 +75,10 @@ OBJ := \
 SERVER_SRC := examples/rep_server.cpp
 CLIENT_SRC := examples/req_client.cpp
 SERVER2_SRC := examples/rep_server2.cpp
-PUBSERVER_SRC := examples/pub_server.cpp
-SUBCLIENT_SRC := examples/sub_client.cpp
-PUB_BENCH_SRC := examples/pub_benchmark.cpp
-SUB_BENCH_SRC := examples/sub_benchmark.cpp
 
 SERVER_BIN := $(BIN_DIR)/rep_server
 CLIENT_BIN := $(BIN_DIR)/req_client
 SERVER2_BIN := $(BIN_DIR)/rep_server2
-PUBSERVER_BIN := $(BIN_DIR)/pub_server
-SUBCLIENT_BIN := $(BIN_DIR)/sub_client
-PUB_BENCH_BIN := $(BIN_DIR)/pub_benchmark
-SUB_BENCH_BIN := $(BIN_DIR)/sub_benchmark
 
 ######################################
 # Default
@@ -128,7 +120,7 @@ $(OBJ_DIR)/%.o: %.cpp
 # Examples
 ######################################
 
-examples: $(SERVER_BIN) $(CLIENT_BIN) $(SERVER2_BIN) $(PUBSERVER_BIN) $(SUBCLIENT_BIN) $(PUB_BENCH_BIN) $(SUB_BENCH_BIN)
+examples: $(SERVER_BIN) $(CLIENT_BIN) $(SERVER2_BIN)
 
 
 $(SERVER_BIN): $(SERVER_SRC) $(LIB_DIR)/$(LIB_NAME)
@@ -147,25 +139,6 @@ $(CLIENT_BIN): $(CLIENT_SRC) $(LIB_DIR)/$(LIB_NAME)
 	-L$(LIB_DIR) -l$(PROJECT) $(LIBS) \
 	-o $@
 
-$(PUBSERVER_BIN): $(PUBSERVER_SRC) $(LIB_DIR)/$(LIB_NAME)
-	$(CXX) $(CXXFLAGS) $(INC_DIRS) $< \
-	-L$(LIB_DIR) -l$(PROJECT) $(LIBS) \
-	-o $@
-
-$(SUBCLIENT_BIN): $(SUBCLIENT_SRC) $(LIB_DIR)/$(LIB_NAME)
-	$(CXX) $(CXXFLAGS) $(INC_DIRS) $< \
-	-L$(LIB_DIR) -l$(PROJECT) $(LIBS) \
-	-o $@
-
-$(PUB_BENCH_BIN): $(PUB_BENCH_SRC) $(LIB_DIR)/$(LIB_NAME)
-	$(CXX) $(CXXFLAGS) $(INC_DIRS) $< \
-	-L$(LIB_DIR) -l$(PROJECT) $(LIBS) \
-	-o $@
-
-$(SUB_BENCH_BIN): $(SUB_BENCH_SRC) $(LIB_DIR)/$(LIB_NAME)
-	$(CXX) $(CXXFLAGS) $(INC_DIRS) $< \
-	-L$(LIB_DIR) -l$(PROJECT) $(LIBS) \
-	-o $@
 
 ######################################
 # Clean

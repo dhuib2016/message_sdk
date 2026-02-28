@@ -2,42 +2,37 @@
 
 namespace msgsdk {
 
-ZmqRepServer::ZmqRepServer(const ClientConfig& cfg)
-    : ZmqBase(cfg) {
+ZmqRepServer::ZmqRepServer(const ClientConfig &cfg) : ZmqBase(cfg) {}
+
+zmqpp::socket_type ZmqRepServer::socketType() const {
+
+  return zmqpp::socket_type::router;
 }
 
-zmqpp::socket_type
-ZmqRepServer::socketType() const {
+void ZmqRepServer::setupSocket(zmqpp::socket &sock) {
 
-    return zmqpp::socket_type::rep;
+  ZmqBase::setupSocket(sock);
+
+  // REP 需要 bind
+  sock.bind(config_.endpoint);
 }
 
-void ZmqRepServer::setupSocket(zmqpp::socket& sock) {
+bool ZmqRepServer::send(const Message &msg) {
 
-    ZmqBase::setupSocket(sock);
+  if (!running_)
+    return false;
 
-    // REP 需要 bind
-    sock.bind(config_.endpoint);
+  try {
+    onSend(msg);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
-bool ZmqRepServer::send(const Message& msg) {
+void ZmqRepServer::setMessageHandler(MessageHandler handler) {
 
-    if (!running_) return false;
-
-    try {
-        onSend(msg);
-        return true;
-    }
-    catch (...) {
-        return false;
-    }
+  handler_ = std::move(handler);
 }
 
-void ZmqRepServer::setMessageHandler(
-    MessageHandler handler) {
-
-    handler_ = std::move(handler);
-}
-
-}
-
+} // namespace msgsdk
