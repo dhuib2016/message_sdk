@@ -1,6 +1,7 @@
 #include "zmq_base.h"
 
 #include <chrono>
+#include <future>
 
 namespace msgsdk {
 
@@ -30,11 +31,13 @@ bool ZmqBase::start() {
     // connect 只给客户端用
     if (socketType() == zmqpp::socket_type::req ||
         socketType() == zmqpp::socket_type::sub ||
+        socketType() == zmqpp::socket_type::dealer ||
         socketType() == zmqpp::socket_type::push) {
 
         socket_->connect(config_.endpoint);
         // 等待连接建立（REQ socket 需要）
-        if (socketType() == zmqpp::socket_type::req) {
+        if (socketType() == zmqpp::socket_type::req ||
+            socketType() == zmqpp::socket_type::dealer) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
@@ -207,10 +210,18 @@ void ZmqBase::dispatchLoop() {
             //     std::lock_guard<std::mutex> log_lock(msgsdk::get_log_mutex());
             //     std::cout << "[handler real start] ts=" << timestamp << " us" << std::flush << std::endl;
             // }
-            //handler_(msg);
-            workers_.post([=] {
-                handler_(msg);
-            } );
+            // 同步处理
+            handler_(msg); 
+            
+            // 使用线程池处理
+            // workers_.post([=] {
+            //     handler_(msg);
+            // } );
+            
+            // 异步处理：使用 std::async 异步执行 handler，不阻塞 dispatchLoop 线程
+            //std::future<void> fut = std::async(std::launch::async, [this, msg]() {
+            //    handler_(msg);
+            //}); 
         }
     }
 }
@@ -281,7 +292,13 @@ void ZmqBase::onSend(const Message& msg) {
         // 唤醒 ioLoop
         zmqpp::message dummy;
         dummy << 1;
-        wakeup_sender_->send(dummy);
+        std::lock_guard<std::mutex> lock(socket_mutex_);
+        // Use dont_wait so we don't block if the wakeup queue is full.
+        // If it's full, a wakeup is already pending and ioLoop will drain the
+        // queue.
+        wakeup_sender_->send(dummy, true); // true = dont_wait
+
+        //wakeup_sender_->send(dummy);
     }
 }
 
