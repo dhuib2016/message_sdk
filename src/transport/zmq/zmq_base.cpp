@@ -82,6 +82,24 @@ void ZmqBase::stop() {
 
 bool ZmqBase::isRunning() const { return running_; }
 
+
+bool ZmqBase::send(const Message& msg)
+{
+    if (!running_)
+        return false;
+
+    send_queue_.push(msg);
+
+    // 唤醒 io 线程
+    if (wakeup_sender_) {
+        zmqpp::message wake;
+        wake << "w";
+        wakeup_sender_->send(wake);
+    }
+
+    return true;
+}
+
 void ZmqBase::setupSocket(zmqpp::socket &sock) {
 
   // 对于 REQ socket，receive_timeout 应该设为 -1（无限等待）
