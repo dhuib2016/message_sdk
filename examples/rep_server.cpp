@@ -71,8 +71,8 @@ int main() {
     signal(SIGTERM, signalHandler);
 
     ClientConfig cfg;
-    //cfg.endpoint = "tcp://*:5555";
-    cfg.endpoint = "ipc:///tmp/message_sdk.ipc";
+    cfg.endpoint = "tcp://*:5555";
+    //cfg.endpoint = "ipc:///tmp/message_sdk.ipc";
     cfg.worker_threads = 2;
 
     auto server =

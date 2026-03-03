@@ -3,10 +3,8 @@
 
 namespace msgsdk {
 
-ZmqBaseActor::ZmqBaseActor(const ClientConfig& cfg,
-                           zmqpp::socket_type type)
-    : config_(cfg),
-      socket_type_(type)
+ZmqBaseActor::ZmqBaseActor(const ClientConfig& cfg,zmqpp::socket_type type)
+    : config_(cfg), socket_type_(type)
 {
 }
 
@@ -19,27 +17,48 @@ bool ZmqBaseActor::start() {
     if (actor_)
         return true;
 
+    auto cfg = config_;
+    auto type = socket_type_;
+
     actor_ = std::make_unique<zmqpp::actor>(
         [this](zmqpp::socket* pipe) -> bool {
 
+       try {
         zmqpp::socket socket(context_, socket_type_);
         setupSocket(socket);
 
         // connect / bind
-        if (socket_type_ == zmqpp::socket_type::req ||
-            socket_type_ == zmqpp::socket_type::dealer ||
-            socket_type_ == zmqpp::socket_type::sub ||
-            socket_type_ == zmqpp::socket_type::push)
-        {
-            socket.connect(config_.endpoint);
-        }
-        else
-        {
+        // if (socketType() == zmqpp::socket_type::req ||
+        //     socketType() == zmqpp::socket_type::dealer ||
+        //     socketType() == zmqpp::socket_type::sub ||
+        //     socketType() == zmqpp::socket_type::push)
+        // {
+        //     socket.connect(config_.endpoint);
+        // }
+        // else
+        // {
+        //     socket.bind(config_.endpoint);
+        // }
+
+        if (config_.bind)
             socket.bind(config_.endpoint);
-        }
+        else
+            socket.connect(config_.endpoint);
 
         pipe->send(zmqpp::signal::ok);
 
+        return true;
+      }
+        catch (std::exception& e) {
+
+            std::cout << "REAL ERROR: "
+                      << e.what() << std::endl;
+
+            return false;   // 让 actor 知道失败
+        }
+
+
+        #if 0
         zmqpp::poller poller;
         poller.add(socket);
         poller.add(*pipe);
@@ -104,8 +123,9 @@ bool ZmqBaseActor::start() {
                 }
             }
         }
+        #endif
 
-        return true;
+        //return true;
     });
 
     return true;
@@ -151,11 +171,34 @@ void ZmqBaseActor::setupSocket(zmqpp::socket& sock) {
              config_.recv_hwm);
 }
 
+// void ZmqBase::setupSocket(zmqpp::socket& sock) {
+
+//     // 对于 REQ socket，receive_timeout 应该设为 -1（无限等待）
+//     // 因为 REQ socket 发送后必须阻塞等待回复
+//     if (socketType() == zmqpp::socket_type::req) {
+//         sock.set(zmqpp::socket_option::receive_timeout, -1);  // 无限等待
+//         //sock.set(zmqpp::socket_option::identity, "ZMQ"); 
+//     } else {
+//         sock.set(zmqpp::socket_option::receive_timeout,
+//                  config_.recv_timeout);
+//     }
+
+//     sock.set(zmqpp::socket_option::send_timeout,
+//              config_.send_timeout);
+
+//     sock.set(zmqpp::socket_option::send_high_water_mark,
+//              config_.send_hwm);
+
+//     sock.set(zmqpp::socket_option::receive_high_water_mark,
+//              config_.recv_hwm);
+// }
+
+
 void ZmqBaseActor::encode(const Message& msg,
                           zmqpp::message& zmsg)
 {
     if (socket_type_ == zmqpp::socket_type::router)
-        zmsg << msg.identity << msg.topic << msg.payload;
+        zmsg << msg.topic << msg.payload;
     else
         zmsg << msg.topic << msg.payload;
 }
@@ -166,9 +209,9 @@ bool ZmqBaseActor::decode(zmqpp::message& zmsg,
     try {
         if (socket_type_ == zmqpp::socket_type::router) {
             if (zmsg.parts() >= 3)
-                zmsg >> msg.identity >> msg.topic >> msg.payload;
+                zmsg >>  msg.topic >> msg.payload;
             else if (zmsg.parts() == 2)
-                zmsg >> msg.identity >> msg.payload;
+                zmsg >> msg.payload;
         }
         else {
             if (zmsg.parts() >= 2)

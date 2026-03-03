@@ -3,7 +3,7 @@
 namespace msgsdk {
 
 ZmqRepServer::ZmqRepServer(const ClientConfig& cfg)
-    : ZmqBase(cfg) {
+    : ZmqBaseActor(cfg,zmqpp::socket_type::rep) {
 }
 
 zmqpp::socket_type
@@ -14,18 +14,19 @@ ZmqRepServer::socketType() const {
 
 void ZmqRepServer::setupSocket(zmqpp::socket& sock) {
 
-    ZmqBase::setupSocket(sock);
+    ZmqBaseActor::setupSocket(sock);
 
     // REP 需要 bind
-    sock.bind(config_.endpoint);
+    //sock.bind(config_.endpoint);
 }
 
 bool ZmqRepServer::send(const Message& msg) {
 
-    if (!running_) return false;
+    //if (!running_) return false;
 
     try {
-        onSend(msg);
+        //onSend(msg);
+        ZmqBaseActor::send(msg);
         return true;
     }
     catch (...) {
