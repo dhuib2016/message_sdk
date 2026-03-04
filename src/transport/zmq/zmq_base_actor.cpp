@@ -13,63 +13,64 @@ ZmqBaseActor::~ZmqBaseActor() {
 }
 
 bool ZmqBaseActor::start() {
-
+    std::cout << "ZmqBaseActor::start()" << std::endl;
     if (actor_)
         return true;
 
-    auto cfg = config_;
-    auto type = socket_type_;
+    // auto cfg = config_;
+    // auto type = socket_type_;
 
     actor_ = std::make_unique<zmqpp::actor>(
         [this](zmqpp::socket* pipe) -> bool {
 
-       try {
+       
         zmqpp::socket socket(context_, socket_type_);
         setupSocket(socket);
+        try {
+            // connect / bind
+            // if (socketType() == zmqpp::socket_type::req ||
+            //     socketType() == zmqpp::socket_type::dealer ||
+            //     socketType() == zmqpp::socket_type::sub ||
+            //     socketType() == zmqpp::socket_type::push)
+            // {
+            //     socket.connect(config_.endpoint);
+            // }
+            // else
+            // {
+            //     socket.bind(config_.endpoint);
+            // }
 
-        // connect / bind
-        // if (socketType() == zmqpp::socket_type::req ||
-        //     socketType() == zmqpp::socket_type::dealer ||
-        //     socketType() == zmqpp::socket_type::sub ||
-        //     socketType() == zmqpp::socket_type::push)
-        // {
-        //     socket.connect(config_.endpoint);
-        // }
-        // else
-        // {
-        //     socket.bind(config_.endpoint);
-        // }
+            if (config_.bind) {
+                std::cout << "bind " << config_.endpoint << std::endl;
+                socket.bind(config_.endpoint);
+            } else {
+                std::cout << "connect " << config_.endpoint << std::endl;
+                socket.connect(config_.endpoint);
+            }
 
-        if (config_.bind)
-            socket.bind(config_.endpoint);
-        else
-            socket.connect(config_.endpoint);
-
-        pipe->send(zmqpp::signal::ok);
-
-        return true;
-      }
+            // 告诉主线程初始化成功
+            pipe->send(zmqpp::signal::ok);
+        }
         catch (std::exception& e) {
-
             std::cout << "REAL ERROR: "
                       << e.what() << std::endl;
 
-            return false;   // 让 actor 知道失败
+            return false;   // 让 actor 知道失败（初始化阶段出错）
         }
 
-
-        #if 0
+        // 进入事件循环，处理 socket 与 pipe 的数据
+        #if 1
         zmqpp::poller poller;
         poller.add(socket);
         poller.add(*pipe);
-
+        //std::cout << "poller.add(socket)" << std::endl;
         while (true) {
 
-            poller.poll();
+            poller.poll(100);
 
             // 1️⃣ 处理来自主线程的命令
             if (poller.has_input(*pipe)) {
-
+                //std::cout << "poller.has_input(*pipe)" << std::endl;
                 zmqpp::message cmd;
                 pipe->receive(cmd);
 
@@ -103,7 +104,7 @@ bool ZmqBaseActor::start() {
 
             // 2️⃣ 处理网络数据
             if (poller.has_input(socket)) {
-
+                //std::cout << "has_input(socket)" << std::endl;
                 zmqpp::message zmsg;
                 if (socket.receive(zmsg)) {
 
@@ -125,7 +126,8 @@ bool ZmqBaseActor::start() {
         }
         #endif
 
-        //return true;
+        // 正常退出事件循环，返回 true
+        return true;
     });
 
     return true;
