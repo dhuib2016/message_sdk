@@ -71,8 +71,9 @@ int main() {
     signal(SIGTERM, signalHandler);
 
     ClientConfig cfg;
-    cfg.endpoint = "tcp://*:5555";
-    //cfg.endpoint = "ipc:///tmp/message_sdk.ipc";
+    //cfg.endpoint = "tcp://*:5555";
+    cfg.bind = true;
+    cfg.endpoint = "ipc:///tmp/message_sdk.ipc";
     cfg.worker_threads = 2;
 
     auto server =
@@ -92,8 +93,8 @@ int main() {
     server->setMessageHandler(
         //[server](const Message& msg){
 
-        //std::cout << "[Server] 收到: "
-        //         << msg.payload << std::endl;
+        // std::cout << "[Server] 收到: "
+        //           << msg.payload << std::endl;
 
         // Message reply;
         // reply.topic = msg.topic;

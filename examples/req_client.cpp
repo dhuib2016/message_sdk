@@ -27,7 +27,7 @@ int main() {
     // for (int i = 0; i < 5; i++) {
     //     std::cout << "start send count:" << i << std::endl;
     //     Message m;
-    //     m.topic = "";  //"test";
+    //     m.topic = "user.login";   //"test";
     //     m.payload = "Hello " + std::to_string(i);
 
     //     client->send(m);
@@ -39,6 +39,7 @@ int main() {
     // =============================
     // 10000 次调用的 benchmark 代码
     // =============================
+   
     const int N = 50000;   //000;
 
     std::cout << "Benchmark: sending " << N << " requests..." << std::endl;
@@ -67,7 +68,8 @@ int main() {
     std::cout << "Total time for " << N << " calls: "
               << total_ms << " ms, avg: "
               << avg_us << " us/call" << std::endl;
-
+ 
     std::cin.get();
+ 
 }
 
