@@ -3,7 +3,7 @@
 namespace msgsdk {
 
 ZmqReqClient::ZmqReqClient(const ClientConfig& cfg)
-    : ZmqBase(cfg) {
+    : ZmqBaseActor(cfg,zmqpp::socket_type::req) {
 }
 
 zmqpp::socket_type
@@ -14,10 +14,10 @@ ZmqReqClient::socketType() const {
 
 bool ZmqReqClient::send(const Message& msg) {
 
-    if (!running_) return false;
+    //if (!running_) return false;
 
     try {
-        onSend(msg);
+        ZmqBaseActor::send(msg);
         return true;
     }
     catch (...) {

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "zmq_base.h"
+#include "zmq_base_actor.h"
 
 namespace msgsdk {
 
 class ZmqReqClient :
-    public ZmqBase,
+    public ZmqBaseActor,
     public IReqClient {
 
 public:
